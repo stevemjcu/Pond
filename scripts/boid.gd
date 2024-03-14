@@ -1,3 +1,4 @@
+class_name Boid
 extends CharacterBody2D
 
 
@@ -14,12 +15,8 @@ extends CharacterBody2D
 
 @export var color := Color.LIGHT_PINK
 
-
-var accel: Vector2
-var drag := 0.95
-
-var screen: Rect2
-var screen_margin = 100
+var bounds: Rect2
+@export var margin = 100
 
 
 #region Rules
@@ -39,13 +36,20 @@ var screen_margin = 100
 
 
 func avoid_screen_edge() -> Vector2:
-	var push := Vector2.ZERO
-	if !screen.has_point(position):
-		if position.x < screen.position.x: push += Vector2.RIGHT
-		if position.x > screen.end.x: push += Vector2.LEFT
-		if position.y < screen.position.y: push += Vector2.DOWN
-		if position.y > screen.end.y: push += Vector2.UP
-	return push * max_speed * turn_factor
+	var direction := Vector2.ZERO
+	if !bounds.has_point(position):
+		if position.x < bounds.position.x: direction += Vector2.RIGHT
+		if position.x > bounds.end.x: direction += Vector2.LEFT
+		if position.y < bounds.position.y: direction += Vector2.DOWN
+		if position.y > bounds.end.y: direction += Vector2.UP
+	return direction * max_speed * turn_factor
+
+
+func avoid_neighbors() -> Vector2:
+	# for each boid in range
+		# calculate displacement vector d
+		# acceleration is d * repulse_factor
+	return Vector2.ZERO
 
 
 #endregion
@@ -57,13 +61,14 @@ func control_speed() -> void:
 
 
 func _ready() -> void:
-	screen = get_viewport_rect().grow(-screen_margin)
+	bounds = get_viewport_rect().grow(-margin)
 
 
 func _physics_process(delta: float) -> void:
-	accel = Vector2.ZERO
-	accel += avoid_screen_edge()
-	velocity += accel * delta
+	var acceleration = Vector2.ZERO
+	acceleration += avoid_screen_edge()
+	acceleration += avoid_neighbors()
+	velocity += acceleration * delta
 	rotation = velocity.normalized().angle()
 	control_speed()
 	move_and_slide()
