@@ -5,10 +5,13 @@ extends CharacterBody2D
 @export var min_speed := 200
 @export var max_speed := 300
 
+# TODO: Figure out how to tweak these in debug mode
+# FIXME: Why do these vary so much compared to PICO-8 version?
+# Small resolution, fixed framerate, or integer truncation?
 @export var turn_factor := 700
 @export var avoid_factor := 20
-@export var align_factor := 2
-@export var attract_factor := 0.005
+@export var match_factor := 2
+@export var approach_factor := 0.5
 
 @export var color := Color.LIGHT_PINK
 @export var margin = 100
@@ -22,20 +25,15 @@ var visible_neighbors: Array[Boid]
 #region Rules
 
 
-# TODO: Implement the following rules:
-# Avoid nearby walls or obstacles
-# Avoid overlapping with nearby boids
-# Match velocity of nearby boids
-# Tend towards nearby boids
-
-# Furthermore:
+# TODO: Consider implementing these rules:
 # Avoid obstacles rather than check screen edge
 # Slightly vary direction randomly
+# Oscillate at higher impulses (swimming vs gliding)
 # Control speed instead of clamping
 # Avoid threats and vary speed accordingly
 
 
-# Try to avoid screen edge
+# Turn to avoid screen edge
 func avoid_screen_edge() -> Vector2:
 	var impulse := Vector2.ZERO
 	var bounds = get_viewport_rect().grow(-margin)
@@ -51,7 +49,7 @@ func avoid_screen_edge() -> Vector2:
 	return impulse * turn_factor
 
 
-# Try to move away from close neighbors
+# Tend to move away from nearby neighbors
 func avoid_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	for neighbor in protected_neighbors:
@@ -59,14 +57,24 @@ func avoid_neighbors() -> Vector2:
 	return impulse * avoid_factor
 
 
-# Try to match average velocity of neighbors
+# Tend to match velocities of visible neighbors
 func match_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	if visible_neighbors.size() == 0:
-		return Vector2.ZERO
+		return impulse
 	for neighbor in visible_neighbors:
-		impulse += neighbor.velocity
-	return (impulse / visible_neighbors.size() - velocity) * align_factor
+		impulse += neighbor.velocity - velocity
+	return (impulse / visible_neighbors.size()) * match_factor
+
+
+# Tend to approach visible neighbors
+func approach_neighbors() -> Vector2:
+	var impulse := Vector2.ZERO
+	if visible_neighbors.size() == 0:
+		return impulse
+	for neighbor in visible_neighbors:
+		impulse += neighbor.position - position
+	return (impulse / visible_neighbors.size()) * approach_factor
 
 
 #endregion
@@ -95,16 +103,19 @@ func control_speed() -> void:
 func _physics_process(delta: float) -> void:
 	detect_neighbors()
 	var impulse = Vector2.ZERO
+	# TODO: Visualize impulses for debugging
 	impulse += avoid_screen_edge()
 	impulse += avoid_neighbors()
 	impulse += match_neighbors()
+	impulse += approach_neighbors()
 	velocity += impulse * delta
 	rotation = velocity.normalized().angle()
 	control_speed()
 	move_and_slide()
 
 
-# TODO: Move to shared location
+# TODO: Move to static class, no autoload necessary
+# Or move to sub-scene encapsulating common draw functions
 func draw_circline(from: Vector2, to: Vector2, radius: int, color: Color):
 	draw_circle(from, radius, color)
 	draw_circle(to, radius, color)
