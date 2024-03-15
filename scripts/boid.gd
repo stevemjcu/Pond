@@ -5,17 +5,12 @@ extends CharacterBody2D
 @export var min_speed := 200
 @export var max_speed := 300
 
-@export var protected_radius := 20
-@export var visible_radius := 64
-
-@export var turn_factor := 2
-@export var repulse_factor := 0.05
-@export var align_factor := 0.05
+@export var turn_factor := 700
+@export var avoid_factor := 20
+@export var align_factor := 1.3
 @export var attract_factor := 0.005
 
 @export var color := Color.LIGHT_PINK
-
-var bounds: Rect2
 @export var margin = 100
 
 
@@ -35,21 +30,41 @@ var bounds: Rect2
 # Avoid threats and vary speed accordingly
 
 
+# Try to avoid screen edge
 func avoid_screen_edge() -> Vector2:
-	var direction := Vector2.ZERO
+	var impulse := Vector2.ZERO
+	var bounds = get_viewport_rect().grow(-margin)
 	if !bounds.has_point(position):
-		if position.x < bounds.position.x: direction += Vector2.RIGHT
-		if position.x > bounds.end.x: direction += Vector2.LEFT
-		if position.y < bounds.position.y: direction += Vector2.DOWN
-		if position.y > bounds.end.y: direction += Vector2.UP
-	return direction * max_speed * turn_factor
+		if position.x < bounds.position.x:
+			impulse += Vector2.RIGHT
+		if position.x > bounds.end.x:
+			impulse += Vector2.LEFT
+		if position.y < bounds.position.y:
+			impulse += Vector2.DOWN
+		if position.y > bounds.end.y:
+			impulse += Vector2.UP
+	return impulse * turn_factor
 
 
+# Try to avoid nearby neighbors
 func avoid_neighbors() -> Vector2:
-	# for each boid in range
-		# calculate displacement vector d
-		# acceleration is d * repulse_factor
-	return Vector2.ZERO
+	var impulse := Vector2.ZERO
+	for body in $ProtectedArea.get_overlapping_bodies()  as Array[Node2D]:
+		# TODO: Add is_in_group() check
+		impulse += position - body.position
+	return impulse * avoid_factor
+
+
+# Try to match average velocity of neighbors
+func match_neighbors() -> Vector2:
+	var impulse := Vector2.ZERO
+	var bodies := $VisibleArea.get_overlapping_bodies() as Array[Node2D]
+	if bodies.size() == 0:
+		return Vector2.ZERO
+	for body in bodies:
+		# TODO: Add is_in_group() check
+		impulse += body.velocity
+	return (impulse / bodies.size() - velocity) * align_factor
 
 
 #endregion
@@ -60,15 +75,12 @@ func control_speed() -> void:
 	velocity = velocity.normalized() * speed
 
 
-func _ready() -> void:
-	bounds = get_viewport_rect().grow(-margin)
-
-
 func _physics_process(delta: float) -> void:
-	var acceleration = Vector2.ZERO
-	acceleration += avoid_screen_edge()
-	acceleration += avoid_neighbors()
-	velocity += acceleration * delta
+	var impulse = Vector2.ZERO
+	impulse += avoid_screen_edge()
+	impulse += avoid_neighbors()
+	impulse += match_neighbors()
+	velocity += impulse * delta
 	rotation = velocity.normalized().angle()
 	control_speed()
 	move_and_slide()

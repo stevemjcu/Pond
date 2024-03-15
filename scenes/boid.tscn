@@ -1,9 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://kxnp3cbw1i2p"]
+[gd_scene load_steps=5 format=3 uid="uid://kxnp3cbw1i2p"]
 
 [ext_resource type="Script" path="res://scripts/boid.gd" id="1_2yur6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5vune"]
 radius = 8.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_aslc0"]
+radius = 20.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_kdrm4"]
+radius = 128.0
 
 [node name="Boid" type="CharacterBody2D"]
 collision_mask = 2
@@ -12,3 +18,13 @@ script = ExtResource("1_2yur6")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_5vune")
+
+[node name="ProtectedArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ProtectedArea"]
+shape = SubResource("CircleShape2D_aslc0")
+
+[node name="VisibleArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="VisibleArea"]
+shape = SubResource("CircleShape2D_kdrm4")
