@@ -112,6 +112,6 @@ func draw_circline(from: Vector2, to: Vector2, radius: int, color: Color):
 
 
 func _draw() -> void:
-	var radius := ($CollisionShape2D.shape as CircleShape2D).radius
-	var span := Vector2.RIGHT * radius * 0.6
-	draw_circline(span / -2, span / 2, radius, color)
+	var shape := $CollisionShape2D.shape as CapsuleShape2D
+	var span := Vector2.RIGHT * (shape.height - shape.radius * 2)
+	draw_circline(span / -2, span / 2, shape.radius, color)
