@@ -7,11 +7,16 @@ extends CharacterBody2D
 
 @export var turn_factor := 700
 @export var avoid_factor := 20
-@export var align_factor := 1.3
+@export var align_factor := 2
 @export var attract_factor := 0.005
 
 @export var color := Color.LIGHT_PINK
 @export var margin = 100
+
+
+var group := "boid"
+var protected_neighbors: Array[Boid]
+var visible_neighbors: Array[Boid]
 
 
 #region Rules
@@ -46,28 +51,40 @@ func avoid_screen_edge() -> Vector2:
 	return impulse * turn_factor
 
 
-# Try to avoid nearby neighbors
+# Try to move away from close neighbors
 func avoid_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
-	for body in $ProtectedArea.get_overlapping_bodies()  as Array[Node2D]:
-		# TODO: Add is_in_group() check
-		impulse += position - body.position
+	for neighbor in protected_neighbors:
+		impulse += position - neighbor.position
 	return impulse * avoid_factor
 
 
 # Try to match average velocity of neighbors
 func match_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
-	var bodies := $VisibleArea.get_overlapping_bodies() as Array[Node2D]
-	if bodies.size() == 0:
+	if visible_neighbors.size() == 0:
 		return Vector2.ZERO
-	for body in bodies:
-		# TODO: Add is_in_group() check
-		impulse += body.velocity
-	return (impulse / bodies.size() - velocity) * align_factor
+	for neighbor in visible_neighbors:
+		impulse += neighbor.velocity
+	return (impulse / visible_neighbors.size() - velocity) * align_factor
 
 
 #endregion
+
+
+func _ready() -> void:
+	add_to_group(group)
+
+
+func detect_neighbors() -> void:
+	protected_neighbors.clear()
+	for body: Node2D in $ProtectedArea.get_overlapping_bodies():
+		if body.is_in_group(group):
+			protected_neighbors.append(body)
+	visible_neighbors.clear()
+	for body: Node2D in $VisibleArea.get_overlapping_bodies():
+		if body.is_in_group(group):
+			visible_neighbors.append(body)
 
 
 func control_speed() -> void:
@@ -76,6 +93,7 @@ func control_speed() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	detect_neighbors()
 	var impulse = Vector2.ZERO
 	impulse += avoid_screen_edge()
 	impulse += avoid_neighbors()
