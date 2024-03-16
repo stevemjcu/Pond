@@ -1,8 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://3tx31uai17mc"]
+[gd_scene load_steps=4 format=3 uid="uid://3tx31uai17mc"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_f0jeg"]
 [ext_resource type="PackedScene" uid="uid://kxnp3cbw1i2p" path="res://scenes/boid.tscn" id="2_ogg45"]
+[ext_resource type="PackedScene" uid="uid://d0bss7ik8uhfs" path="res://scenes/player.tscn" id="3_s5nsn"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_f0jeg")
 boid_scene = ExtResource("2_ogg45")
+
+[node name="Player" parent="." instance=ExtResource("3_s5nsn")]
+position = Vector2(352, 224)
+acceleration = 600
+turn_rate = 3
+color = Color(0.529412, 0.807843, 0.921569, 1)
