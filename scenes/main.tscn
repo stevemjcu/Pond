@@ -10,6 +10,3 @@ boid_scene = ExtResource("2_ogg45")
 
 [node name="Player" parent="." instance=ExtResource("3_s5nsn")]
 position = Vector2(352, 224)
-acceleration = 600
-turn_rate = 3
-color = Color(0.529412, 0.807843, 0.921569, 1)

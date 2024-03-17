@@ -18,9 +18,8 @@ extends CharacterBody2D
 
 
 var group := "boid"
-var protected_neighbors: Array[Boid]
-var visible_neighbors: Array[Boid]
-
+var protected_neighbors: Array[Node2D]
+var visible_neighbors: Array[Node2D]
 
 #region Rules
 
