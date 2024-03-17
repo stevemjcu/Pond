@@ -11,7 +11,7 @@ var input: Vector2
 
 
 func _ready() -> void:
-	add_to_group("boid")
+	add_to_group("a")
 
 
 func handle_input() -> void:
@@ -46,5 +46,4 @@ func _draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
 	var span := Vector2.RIGHT * (shape.height - shape.radius * 2)
 	draw_circline(span / -2, span / 2, shape.radius, color)
-	# TODO: Squash, stretch, and tails!
 

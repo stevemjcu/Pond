@@ -11,15 +11,16 @@ extends CharacterBody2D
 @export var turn_factor := 700
 @export var avoid_factor := 20
 @export var match_factor := 2
-@export var approach_factor := 0.5
+@export var approach_factor := 2
 
 @export var color := Color.LIGHT_PINK
-@export var margin = 100
+@export var margin := 100
 
 
-var group := "boid"
+var group: String
 var protected_neighbors: Array[Node2D]
 var visible_neighbors: Array[Node2D]
+
 
 #region Rules
 
@@ -95,13 +96,13 @@ func detect_neighbors() -> void:
 
 
 func control_speed() -> void:
-	var speed = clampf(velocity.length(), min_speed, max_speed)
+	var speed := clampf(velocity.length(), min_speed, max_speed)
 	velocity = velocity.normalized() * speed
 
 
 func _physics_process(delta: float) -> void:
 	detect_neighbors()
-	var impulse = Vector2.ZERO
+	var impulse := Vector2.ZERO
 	# TODO: Visualize impulses for debugging
 	impulse += avoid_screen_edge()
 	impulse += avoid_neighbors()
