@@ -4,6 +4,7 @@ extends CharacterBody2D
 
 @export var min_speed := 200
 @export var max_speed := 300
+@export var margin := 100
 
 # TODO: Figure out how to tweak these in debug mode
 # FIXME: Why do these vary so much compared to PICO-8 version?
@@ -14,7 +15,6 @@ extends CharacterBody2D
 @export var approach_factor := 2
 
 @export var color := Color.LIGHT_PINK
-@export var margin := 100
 
 
 var group: String
@@ -114,15 +114,6 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
-# TODO: Move to static class, no autoload necessary
-# Or move to sub-scene encapsulating common draw functions
-func draw_circline(from: Vector2, to: Vector2, radius: int, color: Color):
-	draw_circle(from, radius, color)
-	draw_circle(to, radius, color)
-	draw_line(from, to, color, radius * 2)
-
-
-func _draw() -> void:
+func _on_sprite_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	var span := Vector2.RIGHT * (shape.height - shape.radius * 2)
-	draw_circline(span / -2, span / 2, shape.radius, color)
+	$Sprite.draw_capsule(shape.height, shape.radius, color)

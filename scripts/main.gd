@@ -18,9 +18,5 @@ func _ready() -> void:
 		boid.position = get_viewport_rect().get_center()
 		boid.velocity = Vector2.from_angle(randf_range(0, 2 * PI))
 		boid.group = "b"
-		boid.color = Color.PINK
+		boid.color = Color.LIGHT_PINK
 		add_child(boid)
-
-
-func _process(delta: float) -> void:
-	pass

@@ -4,8 +4,8 @@ extends CharacterBody2D
 @export var acceleration := 400
 @export var drag := 0.5
 @export var turn_rate := 4
+@export var color := Color.LIGHT_PINK
 
-@export var color := Color.SKY_BLUE
 
 var input: Vector2
 
@@ -36,14 +36,6 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
-func draw_circline(from: Vector2, to: Vector2, radius: int, color: Color):
-	draw_circle(from, radius, color)
-	draw_circle(to, radius, color)
-	draw_line(from, to, color, radius * 2)
-
-
-func _draw() -> void:
+func _on_sprite_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	var span := Vector2.RIGHT * (shape.height - shape.radius * 2)
-	draw_circline(span / -2, span / 2, shape.radius, color)
-
+	$Sprite.draw_capsule(shape.height, shape.radius, color)
