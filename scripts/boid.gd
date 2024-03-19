@@ -6,35 +6,39 @@ extends CharacterBody2D
 @export var max_speed := 300
 @export var margin := 100
 
-# TODO: Figure out how to tweak these in debug mode
-# FIXME: Why do these vary so much compared to PICO-8 version?
-# Small resolution, fixed framerate, or integer truncation?
 @export var turn_factor := 700
 @export var avoid_factor := 20
 @export var match_factor := 2
 @export var approach_factor := 2
 
-@export var color := Color.LIGHT_PINK
+
+var _color: Color
+var _group: String
 
 
-var group: String
-var protected_neighbors: Array[Node2D]
-var visible_neighbors: Array[Node2D]
+func assign(group: String, color: Color) -> void:
+	remove_from_group(_group)
+	add_to_group(group)
+	_group = group
+	_color = color
+
+
+var protected_neighbors: Array[Node2D]:
+	get:
+		var bodies = $ProtectedArea.get_overlapping_bodies() as Array[Node2D]
+		return bodies.filter(func(b: Node2D): return b.is_in_group(_group))
+
+
+var visible_neighbors: Array[Node2D]:
+	get:
+		var bodies := $VisibleArea.get_overlapping_bodies() as Array[Node2D]
+		return bodies.filter(func(b: Node2D): return b.is_in_group(_group))
 
 
 #region Rules
 
-
-# TODO: Consider implementing these rules:
-# Avoid obstacles rather than check screen edge
-# Slightly vary direction randomly
-# Oscillate at higher impulses (swimming vs gliding)
-# Control speed instead of clamping
-# Avoid threats and vary speed accordingly
-
-
 # Turn to avoid screen edge
-func avoid_screen_edge() -> Vector2:
+func _avoid_screen_edge() -> Vector2:
 	var impulse := Vector2.ZERO
 	var bounds = get_viewport_rect().grow(-margin)
 	if !bounds.has_point(position):
@@ -50,15 +54,15 @@ func avoid_screen_edge() -> Vector2:
 
 
 # Tend to move away from nearby neighbors
-func avoid_neighbors() -> Vector2:
+func _avoid_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	for neighbor in protected_neighbors:
 		impulse += position - neighbor.position
 	return impulse * avoid_factor
 
 
-# Tend to match velocities of visible neighbors
-func match_neighbors() -> Vector2:
+# Tend to align with visible neighbors
+func _match_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	if visible_neighbors.size() == 0:
 		return impulse
@@ -68,7 +72,7 @@ func match_neighbors() -> Vector2:
 
 
 # Tend to approach visible neighbors
-func approach_neighbors() -> Vector2:
+func _approach_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	if visible_neighbors.size() == 0:
 		return impulse
@@ -76,44 +80,26 @@ func approach_neighbors() -> Vector2:
 		impulse += neighbor.position - position
 	return (impulse / visible_neighbors.size()) * approach_factor
 
-
 #endregion
 
 
-func _ready() -> void:
-	add_to_group(group)
-
-
-func detect_neighbors() -> void:
-	protected_neighbors.clear()
-	for body: Node2D in $ProtectedArea.get_overlapping_bodies():
-		if body.is_in_group(group):
-			protected_neighbors.append(body)
-	visible_neighbors.clear()
-	for body: Node2D in $VisibleArea.get_overlapping_bodies():
-		if body.is_in_group(group):
-			visible_neighbors.append(body)
-
-
-func control_speed() -> void:
+func _control_speed() -> void:
 	var speed := clampf(velocity.length(), min_speed, max_speed)
 	velocity = velocity.normalized() * speed
 
 
 func _physics_process(delta: float) -> void:
-	detect_neighbors()
 	var impulse := Vector2.ZERO
-	# TODO: Visualize impulses for debugging
-	impulse += avoid_screen_edge()
-	impulse += avoid_neighbors()
-	impulse += match_neighbors()
-	impulse += approach_neighbors()
+	impulse += _avoid_screen_edge()
+	impulse += _avoid_neighbors()
+	impulse += _match_neighbors()
+	impulse += _approach_neighbors()
 	velocity += impulse * delta
 	rotation = velocity.normalized().angle()
-	control_speed()
+	_control_speed()
 	move_and_slide()
 
 
 func _on_sprite_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	$Sprite.draw_capsule(shape.height, shape.radius, color)
+	$Sprite.draw_capsule(shape.height, shape.radius, _color)
