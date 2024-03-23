@@ -4,7 +4,9 @@ extends CharacterBody2D
 
 @export var min_speed := 200
 @export var max_speed := 300
-@export var margin := 100
+
+@export var obstacle_margin := 100
+@export var bevy_margin := 200
 
 @export var turn_factor := 700
 @export var avoid_factor := 20
@@ -47,10 +49,17 @@ func _detect_neighbors() -> void:
 			_visible_neighbors.append(body)
 
 
+func _control_speed() -> void:
+	var speed := clampf(velocity.length(), min_speed, max_speed)
+	velocity = velocity.normalized() * speed
+
+
+#region Impulses
+
 # Turn to avoid screen edge
 func _avoid_screen_edge() -> Vector2:
 	var impulse := Vector2.ZERO
-	var bounds = get_viewport_rect().grow(-margin)
+	var bounds = get_viewport_rect().grow(-obstacle_margin)
 	if !bounds.has_point(position):
 		if position.x < bounds.position.x:
 			impulse += Vector2.RIGHT
@@ -93,14 +102,12 @@ func _approach_neighbors() -> Vector2:
 	return impulse * approach_factor
 
 
-# Tend to return to center of group
+# Tend to stay close to group
 func _approach_bevy() -> Vector2:
-	if bevy == null || bevy.is_inside(self):
-		return Vector2.ZERO
-	var impulse = bevy.position - position
+	var impulse = Vector2.ZERO
+	if bevy == null or (bevy.position - position).length() < bevy_margin:
+		return impulse
+	impulse = bevy.position - position
 	return impulse * approach_factor / 8
 
-
-func _control_speed() -> void:
-	var speed := clampf(velocity.length(), min_speed, max_speed)
-	velocity = velocity.normalized() * speed
+#endregion
