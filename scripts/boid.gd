@@ -11,18 +11,10 @@ extends CharacterBody2D
 @export var match_factor := 2
 @export var approach_factor := 2
 
-var _color: Color
-var _group: String
+var bevy: Bevy
 
 var _protected_neighbors: Array[Node2D]
 var _visible_neighbors: Array[Node2D]
-
-
-func assign(group: String, color: Color) -> void:
-	remove_from_group(_group)
-	add_to_group(group)
-	_group = group
-	_color = color
 
 
 func _physics_process(delta: float) -> void:
@@ -32,6 +24,7 @@ func _physics_process(delta: float) -> void:
 	impulse += _avoid_neighbors()
 	impulse += _match_neighbors()
 	impulse += _approach_neighbors()
+	impulse += _approach_bevy()
 	velocity += impulse * delta
 	rotation = velocity.normalized().angle()
 	_control_speed()
@@ -40,17 +33,17 @@ func _physics_process(delta: float) -> void:
 
 func _on_sprite_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	$Sprite.draw_capsule(shape.height, shape.radius, _color)
+	$Sprite.draw_capsule(shape.height, shape.radius, bevy.color)
 
 
 func _detect_neighbors() -> void:
 	_protected_neighbors.clear()
 	for body: Node2D in $ProtectedArea.get_overlapping_bodies():
-		if body.is_in_group(_group):
+		if body.is_in_group(bevy.group):
 			_protected_neighbors.append(body)
 	_visible_neighbors.clear()
 	for body: Node2D in $VisibleArea.get_overlapping_bodies():
-		if body.is_in_group(_group):
+		if body.is_in_group(bevy.group):
 			_visible_neighbors.append(body)
 
 
@@ -85,7 +78,8 @@ func _match_neighbors() -> Vector2:
 		return impulse
 	for neighbor in _visible_neighbors:
 		impulse += neighbor.velocity - velocity
-	return (impulse / _visible_neighbors.size()) * match_factor
+	impulse /= _visible_neighbors.size()
+	return impulse * match_factor
 
 
 # Tend to approach visible neighbors
@@ -95,7 +89,16 @@ func _approach_neighbors() -> Vector2:
 		return impulse
 	for neighbor in _visible_neighbors:
 		impulse += neighbor.position - position
-	return (impulse / _visible_neighbors.size()) * approach_factor
+	impulse /= _visible_neighbors.size()
+	return impulse * approach_factor
+
+
+# Tend to return to center of group
+func _approach_bevy() -> Vector2:
+	if bevy == null || bevy.is_inside(self):
+		return Vector2.ZERO
+	var impulse = bevy.position - position
+	return impulse * approach_factor / 8
 
 
 func _control_speed() -> void:

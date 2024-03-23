@@ -1,20 +1,25 @@
 extends Node2D
 
 
+@export var bevy_scene: PackedScene
 @export var boid_scene: PackedScene
 
 
 func _ready() -> void:
-	for i in range(7):
-		var boid := boid_scene.instantiate() as Boid
-		boid.position = get_viewport_rect().get_center()
-		boid.velocity = Vector2.from_angle(randf_range(0, 2 * PI))
-		boid.assign("a", Color.SKY_BLUE)
-		add_child(boid)
+	_instantiate_swarm("a", 7, Color.SKY_BLUE, false)
 
-	for i in range(7):
+
+func _instantiate_swarm(group: String, count: int, color: Color, player: bool) -> void:
+	var bevy := bevy_scene.instantiate() as Bevy
+	bevy.group = group
+	bevy.color = color
+	bevy.player = player
+	add_child(bevy)
+	var position := get_viewport_rect().get_center()
+	var velocity := Vector2.from_angle(randf_range(0, 2 * PI))
+	for i in range(count):
 		var boid := boid_scene.instantiate() as Boid
-		boid.position = get_viewport_rect().get_center()
-		boid.velocity = Vector2.from_angle(randf_range(0, 2 * PI))
-		boid.assign("b", Color.LIGHT_PINK)
+		boid.position = position
+		boid.velocity = velocity.rotated(randf_range(0, PI / 4))
+		bevy.add_member(boid)
 		add_child(boid)

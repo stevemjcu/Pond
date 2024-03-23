@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwykli1a5d0gk"]
+
+[ext_resource type="Script" path="res://scripts/bevy.gd" id="1_4evqy"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2pyka"]
+radius = 154.0
+
+[node name="Bevy" type="Node2D"]
+script = ExtResource("1_4evqy")
+
+[node name="OwnedArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="OwnedArea"]
+shape = SubResource("CircleShape2D_2pyka")
