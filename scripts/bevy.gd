@@ -2,13 +2,11 @@ class_name Bevy
 extends Node2D
 
 
-@export var turn_rate := 4
-@export var player := false
-
 @export var color: Color
 @export var group: String
 
 var _members: Array[Boid]
+var _goal: Vector2
 
 
 func add_member(boid: Boid) -> void:
@@ -24,12 +22,28 @@ func remove_member(boid: Boid) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# TODO: Use goal to update goal-seeking vector
 	position = _average_position()
+	rotation = _average_rotation()
+
+
+func _input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			_goal = event.position
 
 
 func _average_position() -> Vector2:
-	var average := Vector2.ZERO
+	var position := Vector2.ZERO
 	for member in _members:
-		average += member.position
-	average /= _members.size()
-	return average
+		position += member.position
+	position /= _members.size()
+	return position
+
+
+func _average_rotation() -> float:
+	var rotation := 0.0
+	for member in _members:
+		rotation += member.rotation
+	rotation /= _members.size()
+	return rotation

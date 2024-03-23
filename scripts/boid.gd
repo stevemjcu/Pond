@@ -105,7 +105,7 @@ func _approach_neighbors() -> Vector2:
 # Tend to stay close to group
 func _approach_bevy() -> Vector2:
 	var impulse = Vector2.ZERO
-	if bevy == null or (bevy.position - position).length() < bevy_margin:
+	if (bevy.position - position).length() < bevy_margin:
 		return impulse
 	impulse = bevy.position - position
 	return impulse * approach_factor / 8

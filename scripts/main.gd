@@ -6,14 +6,13 @@ extends Node2D
 
 
 func _ready() -> void:
-	_instantiate_swarm("a", 7, Color.SKY_BLUE, false)
+	_instantiate_swarm("a", 9, Color.SKY_BLUE)
 
 
-func _instantiate_swarm(group: String, count: int, color: Color, player: bool) -> void:
+func _instantiate_swarm(group: String, count: int, color: Color) -> void:
 	var bevy := bevy_scene.instantiate() as Bevy
 	bevy.group = group
 	bevy.color = color
-	bevy.player = player
 	add_child(bevy)
 	var position := get_viewport_rect().get_center()
 	var velocity := Vector2.from_angle(randf_range(0, 2 * PI))
