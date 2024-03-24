@@ -1,4 +1,5 @@
-extends Node2D
+class_name Sprite
+extends Sprite2D
 
 
 var _POINT_RADIUS := 2
