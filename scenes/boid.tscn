@@ -37,6 +37,7 @@ shape = SubResource("CircleShape2D_kdrm4")
 z_index = -1
 
 [node name="DebugSprite" parent="." instance=ExtResource("2_th8la")]
+z_index = 1
 
 [connection signal="draw" from="BodySprite" to="." method="_on_body_draw"]
 [connection signal="draw" from="ShadowSprite" to="." method="_on_shadow_draw"]

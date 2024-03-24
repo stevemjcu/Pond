@@ -34,9 +34,10 @@ func _on_sprite_draw() -> void:
 
 
 func _input(event):
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			_goal = event.position
+	if event is InputEventMouseButton\
+	and event.button_index == MOUSE_BUTTON_LEFT\
+	and event.is_pressed():
+		_goal = event.position
 
 
 func _average_position() -> Vector2:
