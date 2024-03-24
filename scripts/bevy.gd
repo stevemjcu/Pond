@@ -25,7 +25,12 @@ func _physics_process(delta: float) -> void:
 	# TODO: Use goal to update goal-seeking vector
 	position = _average_position()
 	rotation = _average_rotation()
-	Debug.add_path([position, _goal], Color.GREEN)
+	$Sprite.queue_redraw()
+
+
+func _on_sprite_draw() -> void:
+	var path := [Vector2.ZERO, to_local(_goal)] as Array[Vector2]
+	$Sprite.draw_path(path, Color.GREEN)
 
 
 func _input(event):

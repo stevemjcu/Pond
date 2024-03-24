@@ -29,7 +29,7 @@ func _physics_process(delta: float) -> void:
 	impulse += _approach_bevy()
 	velocity += impulse * delta
 	rotation = velocity.normalized().angle()
-	Debug.add_vector(position, impulse.normalized(), impulse.length() / max_speed, Color.GREEN)
+	#Debug.add_vector(position, impulse.normalized(), impulse.length() / max_speed, Color.GREEN)
 	_control_speed()
 	move_and_slide()
 
