@@ -31,6 +31,13 @@ shape = SubResource("CircleShape2D_aslc0")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="VisibleArea"]
 shape = SubResource("CircleShape2D_kdrm4")
 
-[node name="Sprite" parent="." instance=ExtResource("2_th8la")]
+[node name="BodySprite" parent="." instance=ExtResource("2_th8la")]
 
-[connection signal="draw" from="Sprite" to="." method="_on_sprite_draw"]
+[node name="ShadowSprite" parent="." instance=ExtResource("2_th8la")]
+z_index = -1
+
+[node name="DebugSprite" parent="." instance=ExtResource("2_th8la")]
+
+[connection signal="draw" from="BodySprite" to="." method="_on_body_draw"]
+[connection signal="draw" from="ShadowSprite" to="." method="_on_shadow_draw"]
+[connection signal="draw" from="DebugSprite" to="." method="_on_debug_draw"]

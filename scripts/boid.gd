@@ -33,17 +33,36 @@ func _physics_process(delta: float) -> void:
 	rotation = velocity.normalized().angle()
 	_control_speed()
 	move_and_slide()
-	$Sprite.queue_redraw()
+	queue_redraw()
 
 
-func _on_sprite_draw() -> void:
+#region Drawing
+
+func _draw() -> void:
+	$BodySprite.queue_redraw()
+	$ShadowSprite.queue_redraw()
+	$DebugSprite.queue_redraw()
+
+
+func _on_body_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	$Sprite.draw_capsule(shape.height, shape.radius, bevy.color)
-	# TODO: Use separate debug sprite to avoid unnecessary redraws?
+	$BodySprite.draw_capsule(Vector2.ZERO, shape.height, shape.radius, bevy.color)
+
+
+func _on_shadow_draw() -> void:
+	var shape := $CollisionShape2D.shape as CapsuleShape2D
+	var offset := to_local(position + Vector2.DOWN * 32)
+	$ShadowSprite.draw_capsule(offset, shape.height, shape.radius, Color(0.25, 0.25, 0.25, 1))
+
+
+func _on_debug_draw() -> void:
+	var color := Color.YELLOW if _approach_bevy().length() == 0 else Color.RED
+	$DebugSprite.draw_point(Vector2.ZERO, color)
 	var direction := to_local(position + _impulse.normalized())
 	var weight := _impulse.length() / max_speed
-	$Sprite.draw_vector(direction, weight, Color.GREEN)
-	$Sprite.draw_point(Vector2.ZERO, Color.GREEN)
+	$DebugSprite.draw_vector(Vector2.ZERO, direction, weight, color)
+
+#endregion
 
 
 func _detect_neighbors() -> void:

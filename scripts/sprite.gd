@@ -1,8 +1,8 @@
 extends Node2D
 
 
-var _point_radius := 2
-var _vector_length := 24
+var _POINT_RADIUS := 2
+var _VECTOR_LENGTH := 24
 
 
 func draw_circline(from: Vector2, to: Vector2, radius: int, color: Color) -> void:
@@ -11,18 +11,18 @@ func draw_circline(from: Vector2, to: Vector2, radius: int, color: Color) -> voi
 	draw_line(from, to, color, radius * 2)
 
 
-func draw_capsule(height: int, radius: int, color: Color) -> void:
+func draw_capsule(at: Vector2, height: int, radius: int, color: Color) -> void:
 	var span := Vector2.RIGHT * (height - radius * 2)
-	draw_circline(span / -2, span / 2, radius, color)
+	draw_circline(at + span / -2, at + span / 2, radius, color)
 
 
 func draw_point(at: Vector2, color: Color) -> void:
-	draw_circle(at, _point_radius, color)
+	draw_circle(at, _POINT_RADIUS, color)
 
 
-func draw_vector(direction: Vector2, weight: float, color: Color) -> void:
+func draw_vector(at: Vector2, direction: Vector2, weight: float, color: Color) -> void:
 	var min := Vector2.ZERO
-	var max := direction * _vector_length
+	var max := direction * _VECTOR_LENGTH
 	draw_line(Vector2.ZERO, min.lerp(max, weight), color)
 
 
