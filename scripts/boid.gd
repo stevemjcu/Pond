@@ -18,25 +18,32 @@ var bevy: Bevy
 var _protected_neighbors: Array[Node2D]
 var _visible_neighbors: Array[Node2D]
 
+var _impulse: Vector2
+
 
 func _physics_process(delta: float) -> void:
 	_detect_neighbors()
-	var impulse := Vector2.ZERO
-	impulse += _avoid_screen_edge()
-	impulse += _avoid_neighbors()
-	impulse += _match_neighbors()
-	impulse += _approach_neighbors()
-	impulse += _approach_bevy()
-	velocity += impulse * delta
+	_impulse = Vector2.ZERO
+	_impulse += _avoid_screen_edge()
+	_impulse += _avoid_neighbors()
+	_impulse += _match_neighbors()
+	_impulse += _approach_neighbors()
+	_impulse += _approach_bevy()
+	velocity += _impulse * delta
 	rotation = velocity.normalized().angle()
-	#Debug.add_vector(position, impulse.normalized(), impulse.length() / max_speed, Color.GREEN)
 	_control_speed()
 	move_and_slide()
+	$Sprite.queue_redraw()
 
 
 func _on_sprite_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
 	$Sprite.draw_capsule(shape.height, shape.radius, bevy.color)
+	# TODO: Use separate debug sprite to avoid unnecessary redraws?
+	var direction := to_local(position + _impulse.normalized())
+	var weight := _impulse.length() / max_speed
+	$Sprite.draw_vector(direction, weight, Color.GREEN)
+	$Sprite.draw_point(Vector2.ZERO, Color.GREEN)
 
 
 func _detect_neighbors() -> void:

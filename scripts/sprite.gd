@@ -1,7 +1,7 @@
 extends Node2D
 
 
-var _point_radius := 3
+var _point_radius := 2
 var _vector_length := 24
 
 
@@ -20,10 +20,10 @@ func draw_point(at: Vector2, color: Color) -> void:
 	draw_circle(at, _point_radius, color)
 
 
-func draw_vector(at: Vector2, direction: Vector2, weight: float, color: Color) -> void:
+func draw_vector(direction: Vector2, weight: float, color: Color) -> void:
 	var min := Vector2.ZERO
 	var max := direction * _vector_length
-	draw_line(at, at + min.lerp(max, weight), color)
+	draw_line(Vector2.ZERO, min.lerp(max, weight), color)
 
 
 func draw_path(path: Array[Vector2], color: Color) -> void:
