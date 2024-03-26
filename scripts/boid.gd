@@ -5,21 +5,25 @@ extends CharacterBody2D
 @export var MIN_SPEED := 200
 @export var MAX_SPEED := 300
 
-@export var OBSTACLE_MARGIN := 100
-@export var BEVY_MARGIN := 200
+@export var OBSTACLE_MARGIN := 64
+@export var BEVY_MARGIN := 64
 
 @export var TURN_FACTOR := 700
 @export var AVOID_FACTOR := 20
 @export var MATCH_FACTOR := 2
 @export var APPROACH_FACTOR := 2
-@export var RETURN_FACTOR := 1
 
-var bevy: Bevy
+var group := "default"
+var color := Color.DARK_GRAY
 
 var _protected_neighbors: Array[Node2D]
 var _visible_neighbors: Array[Node2D]
 
 var _impulse: Vector2
+
+
+func _ready() -> void:
+	add_to_group(group)
 
 
 func _physics_process(delta: float) -> void:
@@ -29,7 +33,6 @@ func _physics_process(delta: float) -> void:
 	_impulse += _avoid_neighbors()
 	_impulse += _match_neighbors()
 	_impulse += _approach_neighbors()
-	_impulse += _approach_bevy()
 	velocity += _impulse * delta
 	rotation = velocity.normalized().angle()
 	_control_speed()
@@ -37,50 +40,43 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 
+func _detect_neighbors() -> void:
+	_protected_neighbors.clear()
+	for body: Node2D in $ProtectedArea.get_overlapping_bodies():
+		if body.is_in_group(group):
+			_protected_neighbors.append(body)
+	_visible_neighbors.clear()
+	for body: Node2D in $VisibleArea.get_overlapping_bodies():
+		if body.is_in_group(group):
+			_visible_neighbors.append(body)
+
+
 #region Drawing
 
 func _draw() -> void:
-	$BodySprite.queue_redraw()
-	$ShadowSprite.queue_redraw()
 	$DebugSprite.queue_redraw()
+	$ShadowSprite.position = position + Vector2(0, 32)
+	$ShadowSprite.rotation = rotation
 
 
 func _on_body_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	$BodySprite.draw_capsule(Vector2.ZERO, shape.height, shape.radius, bevy.color)
+	$BodySprite.draw_capsule(Vector2.ZERO, shape.height, shape.radius, color)
 
 
 func _on_shadow_draw() -> void:
 	var shape := $CollisionShape2D.shape as CapsuleShape2D
-	var offset := to_local(position + Vector2.DOWN * 32)
 	var color := Color(0.25, 0.25, 0.25, 1)
-	$ShadowSprite.draw_capsule(offset, shape.height, shape.radius, color)
+	$ShadowSprite.draw_capsule(Vector2.ZERO, shape.height, shape.radius, color)
 
 
 func _on_debug_draw() -> void:
-	var color := Color.YELLOW if _approach_bevy().length() == 0 else Color.RED
-	$DebugSprite.draw_point(Vector2.ZERO, color)
+	$DebugSprite.draw_point(Vector2.ZERO, Color.YELLOW)
 	var direction := to_local(position + _impulse.normalized())
-	var weight := _impulse.length() / MAX_SPEED
-	$DebugSprite.draw_vector(Vector2.ZERO, direction, weight, color)
+	var weight := _impulse.length() / TURN_FACTOR
+	$DebugSprite.draw_vector(Vector2.ZERO, direction, weight, Color.YELLOW)
 
 #endregion
-
-
-func _detect_neighbors() -> void:
-	_protected_neighbors.clear()
-	for body: Node2D in $ProtectedArea.get_overlapping_bodies():
-		if body.is_in_group(bevy.group):
-			_protected_neighbors.append(body)
-	_visible_neighbors.clear()
-	for body: Node2D in $VisibleArea.get_overlapping_bodies():
-		if body.is_in_group(bevy.group):
-			_visible_neighbors.append(body)
-
-
-func _control_speed() -> void:
-	var speed := clampf(velocity.length(), MIN_SPEED, MAX_SPEED)
-	velocity = velocity.normalized() * speed
 
 
 #region Impulses
@@ -101,7 +97,7 @@ func _avoid_screen_edge() -> Vector2:
 	return impulse * TURN_FACTOR
 
 
-# Tend to move away from nearby neighbors
+# Tend to avoid nearby neighbors
 func _avoid_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	for neighbor in _protected_neighbors:
@@ -120,7 +116,7 @@ func _match_neighbors() -> Vector2:
 	return impulse * MATCH_FACTOR
 
 
-# Tend to approach visible neighbors
+# Tend towards visible neighbors
 func _approach_neighbors() -> Vector2:
 	var impulse := Vector2.ZERO
 	if _visible_neighbors.size() == 0:
@@ -131,12 +127,8 @@ func _approach_neighbors() -> Vector2:
 	return impulse * APPROACH_FACTOR
 
 
-# Tend to stay close to group
-func _approach_bevy() -> Vector2:
-	var impulse = Vector2.ZERO
-	if (bevy.position - position).length() < BEVY_MARGIN:
-		return impulse
-	impulse = bevy.position - position
-	return impulse * RETURN_FACTOR
+func _control_speed() -> void:
+	var speed := clampf(velocity.length(), MIN_SPEED, MAX_SPEED)
+	velocity = velocity.normalized() * speed
 
 #endregion

@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://kxnp3cbw1i2p"]
+[gd_scene load_steps=7 format=3 uid="uid://kxnp3cbw1i2p"]
 
 [ext_resource type="Script" path="res://scripts/boid.gd" id="1_2yur6"]
 [ext_resource type="PackedScene" uid="uid://n32ur4l4p5iv" path="res://scenes/sprite.tscn" id="2_th8la"]
@@ -12,6 +12,9 @@ radius = 16.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kdrm4"]
 radius = 128.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_veq1e"]
+blend_mode = 4
 
 [node name="Boid" type="CharacterBody2D"]
 collision_mask = 2
@@ -34,7 +37,9 @@ shape = SubResource("CircleShape2D_kdrm4")
 [node name="BodySprite" parent="." instance=ExtResource("2_th8la")]
 
 [node name="ShadowSprite" parent="." instance=ExtResource("2_th8la")]
+top_level = true
 z_index = -1
+material = SubResource("CanvasItemMaterial_veq1e")
 
 [node name="DebugSprite" parent="." instance=ExtResource("2_th8la")]
 z_index = 1
